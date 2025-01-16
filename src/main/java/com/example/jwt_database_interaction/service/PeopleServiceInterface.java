@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 public interface PeopleServiceInterface {
 
     People addUserToDb(People user);
-
 }
