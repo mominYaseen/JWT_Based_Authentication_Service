@@ -8,6 +8,7 @@ import com.mysql.cj.util.DnsSrv;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,10 +24,11 @@ public class Controller {
     @Autowired
     private JwtUtils jwtUtils;
 
+    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
     @PostMapping("/register")
     public People registerUserToDb(@RequestBody People user){
-
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         return peopleService.addUserToDb(user);
     }
 
@@ -41,7 +43,7 @@ public class Controller {
     public String login(@RequestParam String email ,@RequestParam String password ){
         UserDetails user = peopleService.loadUserByUsername(email);
 
-        if (user!=null && user.getPassword().equals(password)){
+        if (user!=null && bCryptPasswordEncoder.matches(password , user.getPassword())){
             return jwtUtils.generateToken(email);
         }else{
             return "INVALID CREDENTIALS";
